@@ -4,18 +4,117 @@ from .columfrmtable import get_clean_schema
 from .scoretablewithtd import score_table,build_term_frequency
 from .db import global_db
 
+import re
+from collections import defaultdict
 
 
+# # =====================================================
+# # INTELLIGENCE LAYER: TABLE SIMILARITY EXPANSION
+# # =====================================================
+
+# def tokenize(name: str):
+#     return set(
+#         token.lower()
+#         for token in re.split(r"[_\W]+", name)
+#         if token
+#     )
+
+# def table_similarity(a: str, b: str) -> float:
+#     ta = tokenize(a)
+#     tb = tokenize(b)
+
+#     if not ta or not tb:
+#         return 0.0
+
+#     return len(ta & tb) / len(ta | tb)
+
+# def discover_related_tables(table_name, all_tables, threshold=0.5):
+#     related = []
+
+#     for candidate in all_tables:
+
+#         if candidate == table_name:
+#             continue
+
+#         score = table_similarity(table_name, candidate)
+
+#         if score >= threshold:
+#             related.append(candidate)
+
+#     return related
+
+# def expand_tables(retrieved_docs):
+
+#     all_tables = global_db.get_usable_table_names()
+
+#     expanded_docs = []
+#     seen = set()
+
+#     for doc in retrieved_docs:
+
+#         table = doc.metadata["table_name"]
+
+#         if table not in seen:
+#             expanded_docs.append(doc)
+#             seen.add(table)
+
+#         # expand related tables dynamically
+#         related = discover_related_tables(table, all_tables)
+
+#         for rel_table in related:
+
+#             if rel_table not in seen:
+
+#                 # create synthetic doc for downstream pipeline
+#                 expanded_docs.append(
+#                     type(doc)(
+#                         page_content=doc.page_content,
+#                         metadata={"table_name": rel_table}
+#                     )
+#                 )
+
+#                 seen.add(rel_table)
+
+#     return expanded_docs
+
+
+# =====================================================
+# INTENT: MANUAL + AUTO HYBRID SUPPORT
+# =====================================================
+
+def manual_table_search(keyword: str):
+    """Fallback when embeddings miss correct table"""
+    all_tables = global_db.get_usable_table_names()
+
+    return [
+        t for t in all_tables
+        if keyword.lower() in t.lower()
+    ]
+
+# =====================================================
+# MAIN PIPELINE
+# =====================================================
 
 def get_relevant_tables(user_query: str):
 
     ranked_tables = []
 
+    # =====================================================
+    # STEP 1: FAISS RETRIEVAL
+    # =====================================================
+
     docs = retriever.invoke(user_query)
 
+    # =====================================================
+    # STEP 2: INTELLIGENCE EXPANSION (NEW LAYER)
+    # =====================================================
+    # docs = expand_tables(docs)
+    
     all_schema_texts = []
 
     table_data = []
+
+    all_runtime_schema = {}
 
     # =====================================================
     # PREPARE ALL SCHEMAS
@@ -23,11 +122,13 @@ def get_relevant_tables(user_query: str):
     for doc in docs:
 
         table_name = doc.metadata["table_name"]
-
-        schema_text, mapping_text = get_clean_schema(
+       
+        schema_text, mapping_text,runtime_schema = get_clean_schema(
             engine=global_db._engine,
             tables=[table_name]
         )
+        all_runtime_schema[table_name] = runtime_schema[table_name]
+
 
         combined_text = (
             schema_text + "\n" + mapping_text
@@ -83,7 +184,7 @@ def get_relevant_tables(user_query: str):
     # =====================================================
     print("\nI found these potentially relevant tables:\n")
 
-    for idx, table in enumerate(ranked_tables[:5]):
+    for idx, table in enumerate(ranked_tables[:10]):
 
         confidence = "LOW"
 
@@ -119,10 +220,36 @@ Matched Terms:
     # HUMAN IN LOOP
     # =====================================================
     selected = input(
-        "\nSelect a table by number or table name: "
-    ).strip()
+                            """
+                    Select:
+                    - number (1-10)
+                    - full table name
+                    - OR type: search <keyword>
+
+                    Input: """).strip()
 
     approved_table = None
+
+    # -----------------------------
+    # CASE 1: SEARCH MODE
+    # -----------------------------
+    if selected.lower().startswith("search "):
+
+        keyword = selected.replace("search ", "").strip()
+
+        results = manual_table_search(keyword)
+
+        print("\nManual Search Results:")
+
+        for i, t in enumerate(results):
+            print(f"{i+1}. {t}")
+
+        return {
+            "status": "MANUAL_SEARCH",
+            "results": results,
+            "ranked_tables": ranked_tables
+        }
+
 
     if selected.isdigit():
 
@@ -150,7 +277,8 @@ Matched Terms:
         print("\nApproved Table:")
         print(approved_table)
 
-        return approved_table,ranked_tables
+        return approved_table,ranked_tables,all_runtime_schema
+    
 
     else:
 
@@ -158,11 +286,4 @@ Matched Terms:
 
         return None
 
-
-# =========================================================
-# TEST
-# =========================================================
-# perfect_table=get_relevant_tables(
-#     "Find out Format sequence number, format field enabled and validation columns"
-# )
 

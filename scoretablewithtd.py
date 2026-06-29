@@ -65,6 +65,7 @@ def extract_query_features(query):
 # =========================================================
 # EXTRACT PHRASES FROM MAPPING
 # =========================================================
+
 def extract_dynamic_phrases(mapping_text):
 
     phrases = []
@@ -87,15 +88,20 @@ def extract_dynamic_phrases(mapping_text):
 # =========================================================
 # BUILD TERM FREQUENCY
 # =========================================================
-def build_term_frequency(all_schema_texts):
+"""
+This function builds a document frequency dictionary for all candidate schemas. 
+Its purpose is to identify which terms are common across many tables and 
+which terms are rare and therefore more valuable for table ranking. 
+"""
+def build_term_frequency(all_schema_texts): # receive a list of schema texts.
 
-    counter = Counter()
+    counter = Counter() #Creates an empty frequency dictionary.
 
     for schema in all_schema_texts:
 
-        words = re.findall(r'\w+', schema.lower())
+        words = re.findall(r'\w+', schema.lower()) # matches:letters,numbers,underscores ,remains one token rather than being split example beneficiary_id.
 
-        unique_words = set(words)
+        unique_words = set(words) # Remove Duplicates Within a Table
 
         counter.update(unique_words)
 
@@ -103,7 +109,7 @@ def build_term_frequency(all_schema_texts):
 
 
 # =========================================================
-# DETECT LOW VALUE TERM DYNAMICALLY
+# DETECT LOW VALUE TERM DYNAMICALLY aka TERM IMPORTANCE ANALYZER
 # =========================================================
 def is_low_value_term(
         term,
@@ -234,6 +240,7 @@ def remove_redundant_terms(matched_terms):
                 break
 
         if not is_subterm:
+
 
             final_terms.append(term)
 

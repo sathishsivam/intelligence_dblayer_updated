@@ -10,14 +10,21 @@ docs=[]
 for table in tables:
     try:
         schema=global_db.get_table_info([table])
+        content = f"""
+                        TABLE_NAME: {table}
+                        SCHEMA:{schema}
+                   """
         docs.append(Document(
-                                page_content=schema,
-                                metadata={"table_name":table}
+                                page_content=content,
+                                metadata={"table_name":table,"schema":schema}
                             )
                     )
     except Exception as e:
         print(f"Error Processing {table}: e")
 
+# --------------------------------------------------
+# EMBEDDINGS + VECTOR STORE
+# --------------------------------------------------
 
 embedding=OllamaEmbeddings(model="nomic-embed-text")
 
@@ -29,19 +36,6 @@ retriever = vectorstore.as_retriever(
 
 
 
-# docs=retriever.invoke(input="what is the payload of authentication")
-# print("Metadata embedding  with")
-
-# tables=[]
-# for i in docs:
-#     tables.append(i.metadata['table_name'])
-
-# for table in tables:
-#     print(table)
-
-# context="\n\n".join([doc.page_content for doc in docs])
-
-# print(context)
 
 
 
