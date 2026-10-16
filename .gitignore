@@ -8,3 +8,31 @@ wheels/
 
 # Virtual environments
 .venv/
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Virtual environments
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# macOS
+.DS_Store

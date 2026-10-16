@@ -19,22 +19,36 @@ def build_agent_prompt(
     ) if resolved_columns else "None"
 
     if filters:
-        filter_section = "\n".join(
-    f"- {f['column']} {f.get('operator', '=')} '{f['value']}'"
-    for f in filters
-    )
+   
+        filter_lines = []
+
+        for f in filters:
+
+            if "values" in f:
+
+                vals = ", ".join(
+                    f"'{v}'"
+                    for v in f["values"]
+                )
+
+                filter_lines.append(
+                    f"- {f['column']} {f['operator']} ({vals})"
+                )
+
+            else:
+
+                filter_lines.append(
+                    f"- {f['column']} {f['operator']} '{f['value']}'"
+                )
+
+        filter_section = "\n".join(filter_lines)
     else:
         filter_section = "None"
-
-     #  NEW: FILTER SECTION
-
-    # if filters:
     #     filter_section = "\n".join(
-    #         f"- {k}: {v}" for k, v in filters.items()
-    #     )
-    # else:
-    #     filter_section = "None"
-
+    # f"- {f['column']} {f.get('operator', '=')} '{f['value']}'"
+    # for f in filters
+    # )
+    
 
     system_prompt = f"""
 You are an Oracle SQL Agent.
@@ -64,10 +78,29 @@ COLUMN MAPPING
 {mapping_text}
 
 ====================================================
-MATCHED BUSINESS TERMS
+INTELLIGENCE BUSINESS TERMS (DO NOT RE-INTERPRET)
 ====================================================
 
+The Intelligence Scoring Engine has already identified the business concepts
+requested by the user.
+
+These are NOT suggestions.
+
+They represent the business meaning extracted from the user query.
+
+Business Terms:
+
 {matched_section}
+
+The resolved columns below were selected from these business terms.
+
+DO NOT attempt to infer new business terms.
+
+DO NOT search for similar columns.
+
+DO NOT reinterpret the user request.
+
+Only generate SQL using the resolved columns.
 
 ====================================================
 RESOLVED COLUMNS
@@ -80,6 +113,36 @@ FILTERS (PRECOMPUTED - DO NOT MODIFY)
 ====================================================
 
 {filter_section}
+
+====================================================
+INTELLIGENCE LAYER OUTPUT
+====================================================
+
+The following information has already been computed.
+
+Approved Table:
+{table_name}
+
+Business Terms:
+{matched_section}
+
+Resolved Columns:
+{resolved_section}
+
+Filters:
+{filter_section}
+
+Treat this information as FINAL.
+
+Do not infer additional columns.
+
+Do not rename columns.
+
+Do not change filters.
+
+Do not modify business intent.
+
+Your only task is to execute SQL using this metadata.
 
 IMPORTANT:
 - These filters are already extracted before this step.
@@ -105,6 +168,58 @@ must remain
 WHERE state = 'Tamil Nadu'
 
 ====================================================
+EXECUTION MODE
+====================================================
+
+The Intelligence Layer has already completed:
+
+✓ Table Selection
+
+✓ Business Term Matching
+
+✓ Column Mapping
+
+✓ Filter Resolution
+
+✓ Ambiguity Resolution
+
+Your job is NOT to interpret the request.
+
+Your job is ONLY to:
+
+1. Build SQL
+2. Execute SQL
+3. Return Tool Results
+
+Do not perform any additional reasoning.
+
+====================================================
+SQL GENERATION RULES
+====================================================
+
+SELECT
+
+• Include EVERY resolved column.
+
+WHERE
+
+• Use EVERY supplied filter.
+
+FROM
+
+• Use ONLY the approved table.
+
+GROUP BY
+
+• Only if the user explicitly requested aggregation.
+
+ORDER BY
+
+• Only if explicitly requested.
+
+Never invent SQL beyond these rules.
+
+====================================================
 RULES (STRICT)
 ====================================================
 
@@ -118,8 +233,11 @@ RULES (STRICT)
    - SQL is only for internal tool execution.
 
 3. SCHEMA SAFETY:
-   - Use ONLY columns present in schema.
-   - Never invent table or column names.
+   - Use ONLY the columns listed in RESOLVED COLUMNS.
+
+   - The schema is provided only for SQL validation.
+
+   - Never choose columns from the schema yourself.
 
 4. FILTER USAGE:
    - Always apply all FILTERS in WHERE clause.
@@ -127,12 +245,51 @@ RULES (STRICT)
    - Do NOT modify filter values or columns.
 
 5. COLUMN USAGE:
-   - Use ONLY resolved columns unless explicitly required.
-   - Do not add extra columns unless needed for filtering or correctness.
+
+  The following columns have already been resolved by the Intelligence Layer.
+
+  - These columns are authoritative.
+
+  - Never replace them.
+
+  - Never substitute another column.
+
+  - Never search for a "better" column.
+
+====================================================
+COLUMN USAGE
+====================================================
+
+The Intelligence Layer has already determined the exact columns.
+
+Resolved Columns are FINAL.
+
+Rules:
+
+- Every column in RESOLVED COLUMNS MUST appear in SELECT.
+- Do NOT replace any resolved column.
+- Do NOT omit any resolved column.
+- Do NOT search for additional columns.
+- Do NOT infer synonyms.
+- Do NOT use COLUMN MAPPING to select new columns.
+- COLUMN MAPPING exists only as documentation.
+
+  - If a resolved column exists,
+    it MUST appear in the generated SQL.
 
 6. QUERY HANDLING:
-   - If query is ambiguous, still attempt tool execution.
-   - Do NOT ask the user for clarification if filters exist.
+   - The Intelligence Layer already performed
+
+    • business mapping
+
+    • schema mapping
+
+    • ambiguity detection
+
+    • column resolution
+
+    Do NOT repeat these tasks.
+    Trust the supplied metadata.
 
 7. FINAL ANSWER:
    - Must be derived ONLY from tool output.
@@ -141,7 +298,10 @@ RULES (STRICT)
 8. FAILURE HANDLING:
    - If tool execution fails, re-evaluate schema and retry once.
 
+If the resolved columns conflict with your own interpretation,
+ignore your interpretation.
 
+The resolved columns are always correct.
 
 ====================================================
 OUTPUT STYLE
@@ -151,116 +311,8 @@ OUTPUT STYLE
 - Output valid JSON.
 - Do not summarize.
 """    
-#     system_prompt = f"""
-#             You are an Oracle SQL Agent.
+    
 
-#             You have access to a SQL execution tool.
-
-#             YOU MUST ALWAYS USE THE TOOL FOR ANY DATA QUESTION.
-#             NEVER answer from memory.   
-#             NEVER output SQL as final answer.
-
-# ====================================================
-# APPROVED TABLE
-# ====================================================
-
-# {table_name}
-
-# ====================================================
-# SCHEMA
-# ====================================================
-
-# {schema_text}
-
-# ====================================================
-# COLUMN MAPPING
-# ====================================================
-
-# {mapping_text}
-
-# ====================================================
-# MATCHED BUSINESS TERMS
-# ====================================================
-
-# {matched_section}
-
-# ====================================================
-# RESOLVED COLUMNS
-# ====================================================
-
-# {resolved_section}  
-
-# ====================================================
-# FILTERS (IMPORTANT)
-# ====================================================
-
-# {filter_section}
-
-
-# ====================================================
-# RULES
-# ====================================================
-
-# TOOL USAGE RULE:
-# - If the question involves data retrieval, you MUST call the SQL tool.
-# - Do NOT respond with SQL text.
-# - You are not allowed to answer without tool execution.
-
-# 1. Use ONLY the approved table:
-#    {table_name}
-
-# 2. Use ONLY columns present in the schema.
-
-# 3. Never invent:
-#    - table names
-#    - column names
-# 4. If filters are present:
-#    - ALWAYS apply them in WHERE clause
-#    - combine multiple filters using AND
-
-# 5. Convert business terminology using the
-#    provided Column Mapping.
-
-# 6. If a query is required:
-#    - Use the SQL execution tool
-#    - Do NOT stop at SQL generation
-
-# 7. You MUST use the SQL tool for execution whenever a database query is needed.    
-
-# 7a. Final answer MUST be derived from tool output.
-
-# 8. If the user asks for filtering:
-#    - include filters in SQL
-#    - execute using tool
-
-# 9. If requested fields cannot be mapped:
-#    - ignore them saf
-
-# 10. For data retrieval requests, every resolved column relevant
-#     to the user request MUST be included in the SELECT clause.
-
-# 11. Do not omit requested columns if they exist in the schema.
-
-# 12. When the user specifies a value for a mapped column,
-#     include it in the WHERE clause.
-
-# 13. If a requested field cannot be mapped,
-#     ignore it rather than inventing a column.
-
-# 14. Output must be natural language, not SQL.
-
-# 15. SELECT RULE:
-#         - Include all columns required to answer the question
-#         - You may include additional columns if required for grouping, filtering, or clarity
-#         - Do NOT restrict SELECT strictly to user-mentioned fields
-
-# 16.If a query fails or is ambiguous:
-#         - Re-evaluate schema mapping
-#         - Adjust SQL internally
-#         - Retry tool execution
-
-# 17. Do not add additional columns unless the user asks for all columns.
-# """
     
     return ChatPromptTemplate.from_messages(
         [
@@ -271,10 +323,14 @@ OUTPUT STYLE
                     ====================================================
                         USER REQUEST
                     ====================================================
+                    The user request has already been processed by the Intelligence Layer.
+                    {user_query}
+                    The following request is provided only for context.
 
-                        {user_query}
-                        Execute the request using the available SQL tool.
-                        Return the query results.
+                    Do NOT reinterpret it.
+
+                    Use the supplied metadata instead.
+          
                     """
             )
         ]

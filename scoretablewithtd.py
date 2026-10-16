@@ -33,6 +33,10 @@ def extract_query_terms(query: str):
 # =========================================================
 # QUERY FEATURE EXTRACTION
 # =========================================================
+# =========================================================
+# QUERY FEATURE EXTRACTION
+# =========================================================
+
 def extract_query_features(query):
 
     query_terms = extract_query_terms(query)
@@ -44,23 +48,29 @@ def extract_query_features(query):
     # -------------------------------
     for i in range(len(query_terms) - 1):
 
-        phrases.append(
-            f"{query_terms[i]} {query_terms[i+1]}"
-        )
+        phrase = f"{query_terms[i]} {query_terms[i+1]}"
+        phrases.append(phrase)
 
     # -------------------------------
     # TRIGRAMS
     # -------------------------------
     for i in range(len(query_terms) - 2):
 
-        phrases.append(
+        phrase = (
             f"{query_terms[i]} "
             f"{query_terms[i+1]} "
             f"{query_terms[i+2]}"
         )
 
-    return query_terms, phrases
+        phrases.append(phrase)
 
+    # -------------------------------
+    # IMPORTANT:
+    # Remove duplicate phrases
+    # -------------------------------
+    phrases = list(dict.fromkeys(phrases))
+
+    return query_terms, phrases
 
 # =========================================================
 # EXTRACT PHRASES FROM MAPPING

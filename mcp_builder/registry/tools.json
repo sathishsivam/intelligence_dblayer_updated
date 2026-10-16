@@ -1,0 +1,537 @@
+{
+  "get_posts": {
+    "name": "get_posts",
+    "description": "testing7 with posts data",
+    "transport": "streamable_http",
+    "backend": {
+      "type": "REST_API",
+      "base_url": "https://jsonplaceholder.typicode.com",
+      "path": "/posts",
+      "method": "GET"
+    },
+    "operation_id": "get_posts",
+    "tags": [],
+    "parameters": [],
+    "request_body": null,
+    "responses": {},
+    "security": []
+  },
+  "discover_tables_api_discover_tables_post": {
+    "name": "discover_tables_api_discover_tables_post",
+    "description": "Discover Tables Api",
+    "transport": "streamable_http",
+    "backend": {
+      "type": "REST_API",
+      "base_url": "http://127.0.0.1:8000",
+      "path": "/discover_tables",
+      "method": "POST"
+    },
+    "operation_id": "discover_tables_api_discover_tables_post",
+    "tags": [],
+    "parameters": [],
+    "request_body": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "query": {
+                "type": "string",
+                "title": "Query"
+              }
+            },
+            "type": "object",
+            "required": [
+              "query"
+            ],
+            "title": "QueryRequest"
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Successful Response",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "422": {
+        "description": "Validation Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "detail": {
+                  "items": {
+                    "properties": {
+                      "loc": {
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "integer"
+                            }
+                          ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                      },
+                      "msg": {
+                        "type": "string",
+                        "title": "Message"
+                      },
+                      "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                      },
+                      "input": {
+                        "title": "Input"
+                      },
+                      "ctx": {
+                        "type": "object",
+                        "title": "Context"
+                      }
+                    },
+                    "type": "object",
+                    "required": [
+                      "loc",
+                      "msg",
+                      "type"
+                    ],
+                    "title": "ValidationError"
+                  },
+                  "type": "array",
+                  "title": "Detail"
+                }
+              },
+              "type": "object",
+              "title": "HTTPValidationError"
+            }
+          }
+        }
+      }
+    },
+    "security": []
+  },
+  "list_tools_api_discovery_tools_get": {
+    "name": "list_tools_api_discovery_tools_get",
+    "description": "List Tools",
+    "transport": "streamable_http",
+    "backend": {
+      "type": "REST_API",
+      "base_url": "http://127.0.0.1:8000",
+      "path": "/api-discovery/tools",
+      "method": "GET"
+    },
+    "operation_id": "list_tools_api_discovery_tools_get",
+    "tags": [
+      "API Discovery"
+    ],
+    "parameters": [],
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Successful Response",
+        "headers": {},
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      }
+    },
+    "security": []
+  },
+  "get_posts_1": {
+    "name": "get_posts_1",
+    "description": "get posts from backend",
+    "transport": "streamable_http",
+    "backend": {
+      "type": "REST_API",
+      "base_url": "https://jsonplaceholder.typicode.com",
+      "path": "/posts/{1}",
+      "method": "GET"
+    },
+    "operation_id": "get_posts_1",
+    "tags": [],
+    "parameters": [],
+    "request_body": null,
+    "responses": {},
+    "security": []
+  },
+  "get_api": {
+    "name": "get_api",
+    "description": "requestResponse data",
+    "transport": "streamable_http",
+    "backend": {
+      "type": "REST_API",
+      "base_url": "https://reqres.in",
+      "path": "/api",
+      "method": "GET"
+    },
+    "operation_id": "get_api",
+    "tags": [],
+    "parameters": [],
+    "request_body": null,
+    "responses": {},
+    "security": []
+  },
+  "get_posts_id": {
+    "name": "get_posts_id",
+    "description": "get posts from backend",
+    "transport": "streamable_http",
+    "backend": {
+      "type": "REST_API",
+      "base_url": "https://jsonplaceholder.typicode.com",
+      "path": "/posts/{id}",
+      "method": "GET"
+    },
+    "operation_id": "get_posts_id",
+    "tags": [],
+    "parameters": [],
+    "request_body": null,
+    "responses": {},
+    "security": []
+  },
+  "transfer_funds_transfer_post": {
+    "name": "transfer_funds_transfer_post",
+    "description": "Transfer Funds",
+    "transport": "streamable_http",
+    "backend": {
+      "type": "REST_API",
+      "base_url": "http://127.0.0.1:9001",
+      "path": "/transfer",
+      "method": "POST"
+    },
+    "operation_id": "transfer_funds_transfer_post",
+    "tags": [],
+    "parameters": [],
+    "request_body": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "from_account": {
+                "type": "integer",
+                "title": "From Account"
+              },
+              "to_account": {
+                "type": "integer",
+                "title": "To Account"
+              },
+              "amount": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                  }
+                ],
+                "title": "Amount"
+              }
+            },
+            "type": "object",
+            "required": [
+              "from_account",
+              "to_account",
+              "amount"
+            ],
+            "title": "TransferRequest"
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Successful Response",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "422": {
+        "description": "Validation Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "detail": {
+                  "items": {
+                    "properties": {
+                      "loc": {
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "integer"
+                            }
+                          ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                      },
+                      "msg": {
+                        "type": "string",
+                        "title": "Message"
+                      },
+                      "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                      },
+                      "input": {
+                        "title": "Input"
+                      },
+                      "ctx": {
+                        "type": "object",
+                        "title": "Context"
+                      }
+                    },
+                    "type": "object",
+                    "required": [
+                      "loc",
+                      "msg",
+                      "type"
+                    ],
+                    "title": "ValidationError"
+                  },
+                  "type": "array",
+                  "title": "Detail"
+                }
+              },
+              "type": "object",
+              "title": "HTTPValidationError"
+            }
+          }
+        }
+      }
+    },
+    "security": []
+  },
+  "get_account_balance_accounts__account_number__balance_get": {
+    "name": "get_account_balance_accounts__account_number__balance_get",
+    "description": "Get Account Balance",
+    "transport": "streamable_http",
+    "backend": {
+      "type": "REST_API",
+      "base_url": "http://127.0.0.1:9000",
+      "path": "/accounts/{account_number}/balance",
+      "method": "GET"
+    },
+    "operation_id": "get_account_balance_accounts__account_number__balance_get",
+    "tags": [],
+    "parameters": [
+      {
+        "name": "account_number",
+        "in": "path",
+        "required": true,
+        "description": null,
+        "schema": {
+          "type": "string",
+          "title": "Account Number"
+        }
+      }
+    ],
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Successful Response",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "422": {
+        "description": "Validation Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "detail": {
+                  "items": {
+                    "properties": {
+                      "loc": {
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "integer"
+                            }
+                          ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                      },
+                      "msg": {
+                        "type": "string",
+                        "title": "Message"
+                      },
+                      "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                      },
+                      "input": {
+                        "title": "Input"
+                      },
+                      "ctx": {
+                        "type": "object",
+                        "title": "Context"
+                      }
+                    },
+                    "type": "object",
+                    "required": [
+                      "loc",
+                      "msg",
+                      "type"
+                    ],
+                    "title": "ValidationError"
+                  },
+                  "type": "array",
+                  "title": "Detail"
+                }
+              },
+              "type": "object",
+              "title": "HTTPValidationError"
+            }
+          }
+        }
+      }
+    },
+    "security": []
+  },
+  "get_account_accounts__account_id__get": {
+    "name": "get_account_accounts__account_id__get",
+    "description": "Get Account",
+    "transport": "streamable_http",
+    "backend": {
+      "type": "REST_API",
+      "base_url": "http://127.0.0.1:9001",
+      "path": "/accounts/{account_id}",
+      "method": "GET"
+    },
+    "operation_id": "get_account_accounts__account_id__get",
+    "tags": [],
+    "parameters": [
+      {
+        "name": "account_id",
+        "in": "path",
+        "required": true,
+        "description": null,
+        "schema": {
+          "type": "integer",
+          "title": "Account Id"
+        }
+      }
+    ],
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Successful Response",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "422": {
+        "description": "Validation Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "detail": {
+                  "items": {
+                    "properties": {
+                      "loc": {
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "integer"
+                            }
+                          ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                      },
+                      "msg": {
+                        "type": "string",
+                        "title": "Message"
+                      },
+                      "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                      },
+                      "input": {
+                        "title": "Input"
+                      },
+                      "ctx": {
+                        "type": "object",
+                        "title": "Context"
+                      }
+                    },
+                    "type": "object",
+                    "required": [
+                      "loc",
+                      "msg",
+                      "type"
+                    ],
+                    "title": "ValidationError"
+                  },
+                  "type": "array",
+                  "title": "Detail"
+                }
+              },
+              "type": "object",
+              "title": "HTTPValidationError"
+            }
+          }
+        }
+      }
+    },
+    "security": []
+  },
+  "get_photos_id": {
+    "name": "get_photos_id",
+    "description": "Get the Photos of concern id",
+    "transport": "streamable_http",
+    "backend": {
+      "type": "REST_API",
+      "base_url": "https://jsonplaceholder.typicode.com",
+      "path": "/photos/{id}",
+      "method": "GET"
+    },
+    "operation_id": "get_photos_id",
+    "tags": [],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Path parameter: id",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body": null,
+    "responses": {},
+    "security": []
+  }
+}

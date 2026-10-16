@@ -1,4 +1,4 @@
-from .mapping import prettify_column
+from .mapping import build_business_terms
 from sqlalchemy import inspect
 import re
 from sqlalchemy import inspect
@@ -28,15 +28,23 @@ def get_clean_schema(engine, tables):
             # Schema part
             col_list.append(f"{col_name}       ({col_type})")
 
-            # Mapping part
-            pretty_name = prettify_column(col_name)
+           # Mapping part
+           # =====================================================
+           # BUSINESS TERM GENERATION
+           # =====================================================
 
-            mapping_entry = f'- "{pretty_name}" → {col_name}'
+            business_terms = build_business_terms(col_name)
 
-            if mapping_entry not in seen_mappings:
-                mapping_text += mapping_entry + "\n"
-                seen_mappings.add(mapping_entry)
+            for term in business_terms:
+
+                mapping_entry = f'- "{term}" → {col_name}'
+
+                if mapping_entry not in seen_mappings:
+
+                     mapping_text += mapping_entry + "\n"
+
+                     seen_mappings.add(mapping_entry)
 
         schema_text += f"\nTable: {table}\nColumns:\n- " + "\n- ".join(col_list) + "\n"
 
-    return schema_text, mapping_text,runtime_schema
+        return schema_text, mapping_text,runtime_schema

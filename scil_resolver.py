@@ -31,12 +31,25 @@ def resolve_columns(matched_terms, mapping_text, threshold=0.78, top_k=5):
 
     mapping = build_mapping_dict(mapping_text)
 
+    # resolved = []
+    # ambiguities = []
+
     resolved = []
     ambiguities = []
+    needs_hitl = False
 
     for term in matched_terms:
 
         term_norm = normalize(term)
+        # ====================================
+        # Exact business term match
+        # ====================================
+
+        if term_norm in mapping:
+
+            resolved.append(mapping[term_norm])
+
+            continue
 
         scores = [
             {
@@ -55,19 +68,46 @@ def resolve_columns(matched_terms, mapping_text, threshold=0.78, top_k=5):
         # -------------------------
         # DECISION RULE
         # -------------------------
-        if top1["score"] >= threshold and (not top2 or (top1["score"] - top2["score"]) > 0.08):
+        # if top1["score"] >= threshold and (not top2 or (top1["score"] - top2["score"]) > 0.08):
+
+        #     resolved.append(top1["column"])
+
+        # else:
+        #     ambiguities.append({
+        #         "term": term,
+        #         "top1": top1,
+        #         "top2": top2,
+        #         "all_candidates": scores[:top_k]
+        #     })
+
+        margin = 0 if top2 is None else top1["score"] - top2["score"]
+
+        if top1["score"] >= 0.95:
+
+            resolved.append(top1["column"])
+
+        elif top1["score"] >= threshold and margin >= 0.15:
 
             resolved.append(top1["column"])
 
         else:
-            ambiguities.append({
-                "term": term,
-                "top1": top1,
-                "top2": top2,
-                "all_candidates": scores[:top_k]
-            })
 
+            needs_hitl = True
+
+            ambiguities.append({
+
+                "term": term,
+
+                "top1": top1,
+
+                "top2": top2,
+
+                "all_candidates": scores[:top_k]
+
+            })
+    
     return {
         "resolved_columns": list(set(resolved)),
-        "ambiguities": ambiguities
+        "ambiguities": ambiguities,
+        "needs_hitl":needs_hitl
     }
